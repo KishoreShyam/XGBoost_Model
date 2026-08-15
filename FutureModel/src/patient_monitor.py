@@ -39,7 +39,7 @@ print("=" * 75)
 # Load feature names and pipeline files
 features = joblib.load(os.path.join(MODEL_DIR, "model_features.pkl"))
 
-outcomes = ["utilization", "deterioration", "escalation"]
+outcomes = ["future"]
 final_models = {}
 imputers = {}
 
@@ -176,7 +176,7 @@ def monitor_dataset(data_path, label):
     
     columns_to_keep = [
         "PATIENT_ID", "SNAPSHOT_DATE", 
-        "CURRENT_RISK_PROB", "UTILIZATION_PROB", "DETERIORATION_PROB", "ESCALATION_PROB",
+        "CURRENT_RISK_PROB", "FUTURE_PROB",
         "IS_OUTLIER", "OUTLIER_DETAILS",
         "IS_RISK_SPIKE", "RISK_SPIKE_DETAILS",
         "IS_CRITICAL_ALERT", "CRITICAL_ALERT_DETAILS"

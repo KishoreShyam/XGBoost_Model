@@ -16,9 +16,7 @@ OUTPUT_DIR = "FutureModel/outputs"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 TARGETS = [
-    "FUTURE_HIGH_UTILIZATION",
-    "FUTURE_CLINICAL_DETERIORATION",
-    "FUTURE_HEALTHCARE_ESCALATION"
+    "FUTURE_TARGET"
 ]
 
 print("=" * 70)
@@ -64,24 +62,14 @@ def calibrate_sigmoid(validation_probability, validation_target, test_probabilit
 
 
 print("\n" + "=" * 70)
-print("FUTURE RISK MODELS PROBABILITY CALIBRATION")
+print("FUTURE RISK MODEL PROBABILITY CALIBRATION")
 print("=" * 70)
 
 all_predictions = pd.DataFrame({"PATIENT_ID": test_df["PATIENT_ID"].values})
 summary = []
 
 for target in TARGETS:
-    print("\n\n")
-    print("=" * 70)
-    print(f"CALIBRATING: {target}")
-    print("=" * 70)
-
-    target_to_file = {
-        "FUTURE_HIGH_UTILIZATION": "xgb_utilization.pkl",
-        "FUTURE_CLINICAL_DETERIORATION": "xgb_deterioration.pkl",
-        "FUTURE_HEALTHCARE_ESCALATION": "xgb_escalation.pkl"
-    }
-    model_path = os.path.join(MODEL_DIR, target_to_file[target])
+    model_path = os.path.join(MODEL_DIR, "xgb_future.pkl")
     model = joblib.load(model_path)
     print("Model loaded.")
 
@@ -150,5 +138,5 @@ print("=" * 70)
 print(summary_df.to_string(index=False))
 
 print("\n" + "=" * 70)
-print("FUTURE MODELS CALIBRATION COMPLETE")
+print("FUTURE MODEL CALIBRATION COMPLETE")
 print("=" * 70)

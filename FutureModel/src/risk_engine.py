@@ -48,13 +48,7 @@ else:
 # PROBABILITY COLUMNS
 # ============================================================
 
-UTILIZATION_ORIGINAL = "FUTURE_HIGH_UTILIZATION_ORIGINAL_PROB"
-DETERIORATION = "FUTURE_CLINICAL_DETERIORATION_CALIBRATED_PERCENT"
-ESCALATION = "FUTURE_HEALTHCARE_ESCALATION_CALIBRATED_PERCENT"
-
-df["UTILIZATION_PROBABILITY"] = df[UTILIZATION_ORIGINAL] * 100
-df["DETERIORATION_PROBABILITY"] = df[DETERIORATION]
-df["ESCALATION_PROBABILITY"] = df[ESCALATION]
+df["FUTURE_RISK_PROBABILITY"] = df["FUTURE_TARGET_CALIBRATED_PERCENT"]
 
 
 # ============================================================
@@ -83,67 +77,25 @@ print("STEP 2 — INDIVIDUAL RISK CATEGORIES")
 print("=" * 70)
 
 df["CURRENT_RISK_LEVEL"] = df["CURRENT_RISK_PROBABILITY"].apply(risk_category)
-df["UTILIZATION_RISK"] = df["UTILIZATION_PROBABILITY"].apply(risk_category)
-df["DETERIORATION_RISK"] = df["DETERIORATION_PROBABILITY"].apply(risk_category)
-df["ESCALATION_RISK"] = df["ESCALATION_PROBABILITY"].apply(risk_category)
+df["FUTURE_RISK_LEVEL"] = df["FUTURE_RISK_PROBABILITY"].apply(risk_category)
 
 # ============================================================
-# STEP 3 — HIGHEST RISK
+# STEP 4 — OVERALL RISK PROFILE
 # ============================================================
 
 print("\n" + "=" * 70)
-print("STEP 3 — HIGHEST FUTURE RISK")
+print("STEP 4 — OVERALL RISK PROFILING")
 print("=" * 70)
-
-risk_columns = [
-    "UTILIZATION_PROBABILITY",
-    "DETERIORATION_PROBABILITY",
-    "ESCALATION_PROBABILITY"
-]
-
-df["HIGHEST_RISK_PROBABILITY"] = df[risk_columns].max(axis=1)
-
-
-def highest_risk_type(row):
-    values = {
-        "HIGH_UTILIZATION": row["UTILIZATION_PROBABILITY"],
-        "CLINICAL_DETERIORATION": row["DETERIORATION_PROBABILITY"],
-        "HEALTHCARE_ESCALATION": row["ESCALATION_PROBABILITY"]
-    }
-    return max(values, key=values.get)
-
-
-df["HIGHEST_RISK_TYPE"] = df.apply(highest_risk_type, axis=1)
-
-# ============================================================
-# STEP 4 — COUNT ELEVATED DOMAINS
-# ============================================================
-
-print("\n" + "=" * 70)
-print("STEP 4 — MULTI-DOMAIN RISK")
-print("=" * 70)
-
-df["ELEVATED_RISK_DOMAINS"] = (
-        (df["UTILIZATION_PROBABILITY"] >= 50).astype(int) +
-        (df["DETERIORATION_PROBABILITY"] >= 50).astype(int) +
-        (df["ESCALATION_PROBABILITY"] >= 50).astype(int)
-)
 
 
 def overall_risk_profile(row):
-    count = row["ELEVATED_RISK_DOMAINS"]
     current_high = row["CURRENT_RISK_PROBABILITY"] >= 60
-    current_risk_prefix = "CURRENT CRITICAL RISK & " if current_high else ""
-    if count == 0:
-        if current_high:
-            return "CURRENT CRITICAL RISK & LOW FUTURE RISK"
-        return "LOW FUTURE RISK PROFILE"
-    elif count == 1:
-        return current_risk_prefix + "SINGLE-DOMAIN ELEVATED RISK"
-    elif count == 2:
-        return current_risk_prefix + "MULTI-DOMAIN ELEVATED RISK"
-    else:
-        return current_risk_prefix + "MULTI-DOMAIN HIGH RISK"
+    future_high = row["FUTURE_RISK_PROBABILITY"] >= 50
+    
+    current_prefix = "CURRENT CRITICAL RISK" if current_high else "CURRENT LOW RISK"
+    future_suffix = "HIGH FUTURE RISK" if future_high else "LOW FUTURE RISK"
+    
+    return f"{current_prefix} & {future_suffix}"
 
 
 df["RISK_PROFILE"] = df.apply(overall_risk_profile, axis=1)
@@ -158,9 +110,6 @@ print("=" * 70)
 
 print(df["RISK_PROFILE"].value_counts())
 
-print("\nHighest risk domain:")
-print(df["HIGHEST_RISK_TYPE"].value_counts())
-
 # ============================================================
 # STEP 6 — DISPLAY SAMPLE PATIENTS
 # ============================================================
@@ -172,16 +121,9 @@ print("=" * 70)
 display_columns = [
     "PATIENT_ID",
     "CURRENT_RISK_PROBABILITY",
-    "UTILIZATION_PROBABILITY",
-    "DETERIORATION_PROBABILITY",
-    "ESCALATION_PROBABILITY",
+    "FUTURE_RISK_PROBABILITY",
     "CURRENT_RISK_LEVEL",
-    "UTILIZATION_RISK",
-    "DETERIORATION_RISK",
-    "ESCALATION_RISK",
-    "HIGHEST_RISK_PROBABILITY",
-    "HIGHEST_RISK_TYPE",
-    "ELEVATED_RISK_DOMAINS",
+    "FUTURE_RISK_LEVEL",
     "RISK_PROFILE"
 ]
 

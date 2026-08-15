@@ -49,7 +49,7 @@ print("Train rows (reference/baseline):", len(train_df))
 print("Test rows (current batch, should show minimal drift):", len(test_df))
 print("Features monitored:", len(features))
 
-outcomes = ["utilization", "deterioration", "escalation"]
+outcomes = ["future"]
 models = {o: joblib.load(os.path.join(MODEL_DIR, f"xgb_{o}.pkl")) for o in outcomes}
 final_models = {o: joblib.load(os.path.join(MODEL_DIR, f"final_{o}.pkl")) for o in outcomes}
 imputers = {o: joblib.load(os.path.join(MODEL_DIR, f"imputer_{o}.pkl")) for o in outcomes}

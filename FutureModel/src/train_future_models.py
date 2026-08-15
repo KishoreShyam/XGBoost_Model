@@ -18,10 +18,7 @@ df = pd.read_csv(DATA_PATH, low_memory=False)
 # Exclude metadata, targets, and (defensively) any stray CURRENT_* columns
 metadata = ["PATIENT_ID", "SNAPSHOT_DATE", "HISTORY_WINDOW_MONTHS", "CENSUS_TRACT_GEOID", "COUNTY_FIPS", "DATA_SPLIT"]
 target_cols = [
-    "FUTURE_TARGET", "FUTURE_HIGH_UTILIZATION", "FUTURE_CLINICAL_DETERIORATION",
-    "FUTURE_HEALTHCARE_ESCALATION", "SYNTHETIC_FUTURE_HIGH_UTILIZATION_PROB",
-    "SYNTHETIC_FUTURE_DETERIORATION_PROB", "SYNTHETIC_FUTURE_ESCALATION_PROB",
-    "CURRENT_RISK",
+    "FUTURE_TARGET", "CURRENT_RISK",
 ]
 excluded = set(metadata + target_cols + [c for c in df.columns if c.startswith("CURRENT_")])
 features = [c for c in df.columns if c not in excluded]
@@ -39,9 +36,7 @@ class CalibratedXGBWrapper:
 
 
 outcome_targets = {
-    "UTILIZATION": "FUTURE_HIGH_UTILIZATION",
-    "DETERIORATION": "FUTURE_CLINICAL_DETERIORATION",
-    "ESCALATION": "FUTURE_HEALTHCARE_ESCALATION",
+    "FUTURE": "FUTURE_TARGET"
 }
 
 results = {}
@@ -130,7 +125,7 @@ train_medians = df[df["DATA_SPLIT"] == "train"][features].median()
 joblib.dump(train_medians, os.path.join(MODEL_DIR, "training_medians.pkl"))
 
 print("\n" + "=" * 70)
-print("SUMMARY — ALL THREE FUTURE OUTCOME MODELS")
+print("SUMMARY — FUTURE RISK MODEL")
 print("=" * 70)
 summary_df = pd.DataFrame(results).T
 print(summary_df.round(4))
