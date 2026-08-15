@@ -1,0 +1,45 @@
+
+COGNIZANT 14K FUTURE-RISK DEVELOPMENT DATASET (CORRECTED — LEAKAGE FIXED)
+==========================================================================
+
+IMPORTANT:
+All FUTURE_* targets in this development dataset are SYNTHETIC.
+They are NOT observed clinical outcomes.
+
+WHAT CHANGED FROM THE PREVIOUS VERSION
+---------------------------------------
+The previous pipeline included CURRENT_* columns directly as model
+features, while the FUTURE_* targets were built almost entirely from
+those same CURRENT_* columns (~92% signal, ~8% noise). That is target
+leakage: the model could see its own answer key at prediction time.
+
+This version:
+- Splits PAST_12M into PAST_A (months 1-6) / PAST_B (months 7-12)
+- Builds CHANGE_*/GROWTH_* trajectory features strictly within the
+  past window (PAST_A -> PAST_B), never touching CURRENT_*
+- Uses CURRENT_* ONLY to construct the three future targets below
+- Excludes ALL CURRENT_* columns from MODEL_FEATURES
+
+PRIMARY TARGET
+--------------
+FUTURE_TARGET (currently = FUTURE_HIGH_UTILIZATION)
+
+THREE FUTURE OUTCOMES
+----------------------
+FUTURE_HIGH_UTILIZATION       <- from CURRENT encounter/inpatient/ED/outpatient counts
+FUTURE_CLINICAL_DETERIORATION <- from CURRENT condition/chronic condition/clinical burden
+FUTURE_HEALTHCARE_ESCALATION  <- from CURRENT medication/procedure/utilization counts
+
+PROBABILITY COLUMNS
+--------------------
+SYNTHETIC_FUTURE_HIGH_UTILIZATION_PROB
+SYNTHETIC_FUTURE_DETERIORATION_PROB
+SYNTHETIC_FUTURE_ESCALATION_PROB
+
+IMPORTANT MODELING RULE
+------------------------
+Never use CURRENT_*, PATIENT_ID, SNAPSHOT_DATE, census identifiers,
+original LABEL, LABEL_SCORE, or DATA_SPLIT as predictive features.
+
+RANDOM SEED: 42
+DATA SPLIT: 70% train / 15% validation / 15% test
